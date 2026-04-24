@@ -127,8 +127,11 @@ execute: async (context: any, formItemParams: any) => {
     maxRetries: 1,
     maxTotalTime: 900000,
   };
+  
+  console.log(image);
+  
 
-  const tmpUrls = image ? image.flatMap(group => group.map(item => item.tmp_url)) : [];
+  const tmpUrls = image ? image.filter(Boolean).flatMap(group => group.map(item => item.tmp_url)) : [];
 
   const buildRequestBody = () => {
     const body = {
