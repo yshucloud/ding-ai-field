@@ -5,7 +5,7 @@ const { t } = fieldDecoratorKit;
 fieldDecoratorKit.setDomainList(['ai.ysapi.cloud']);
 
 fieldDecoratorKit.setDecorator({
-  name: 'AI 生图(Image 2)',
+  name: 'AI 生图(Grok Image)',
   // 定义捷径的i18n语言资源
   i18nMap: {
     'zh-CN': {
@@ -72,24 +72,15 @@ fieldDecoratorKit.setDecorator({
       label: t('aspect_ratio'),
       component: FormItemComponent.SingleSelect,
       props: {
-        defaultValue: 'auto',
+        defaultValue: '960x960',
         placeholder: '选择图像比例',
         options: [
-          { key: 'auto', title: 'auto' },
-          { key: '1:1', title: '1:1' },
-          { key: '3:2', title: '3:2' },
-          { key: '2:3', title: '2:3' },
-          { key: '16:9', title: '16:9' },
-          { key: '9:16', title: '9:16' },
-          { key: '4:3', title: '4:3' },
-          { key: '3:4', title: '3:4' },
-          { key: '21:9', title: '21:9' },
-          { key: '9:21', title: '9:21' },
-          { key: '1:3', title: '1:3' },
-          { key: '3:1', title: '3:1' },
-          { key: '2:1', title: '2:1' },
-          { key: '1:2', title: '1:2' }
-        ]
+          { key: '960x960', title: '960x960' },
+          { key: '720x1280', title: '720x1280' },
+          { key: '1280x720', title: '1280x720' },
+          { key: '1168x784', title: '1168x784', },
+          { key: '784x1168', title: '784x1168' },
+        ],
       },
       validator: {
         required: true,
@@ -106,7 +97,7 @@ fieldDecoratorKit.setDecorator({
           { key: 'jpg', title: 'jpg' },
           { key: 'png', title: 'png' },
           { key: 'webp', title: 'webp' },
-        ]
+        ],
       },
       validator: {
         required: true,
@@ -123,8 +114,8 @@ execute: async (context: any, formItemParams: any) => {
 
   const CONFIG = {
     baseUrl: 'https://ai.ysapi.cloud/v1/images/generations',
-    model: 'gpt-image-2',
-    maxRetries:2,
+    model: 'grok-3-image',
+    maxRetries: 2,
     maxTotalTime: 900000,
   };  
 
@@ -185,6 +176,7 @@ execute: async (context: any, formItemParams: any) => {
   }
 
   const errmsg = String(lastError);
+  
 
   if (errmsg.includes('额度')) {
     return { code: FieldExecuteCode.QuotaExhausted };

@@ -47,11 +47,28 @@ fieldDecoratorKit.setDecorator({
   // 定义捷径的入参
   formItems: [
     {
+      key: 'model',
+      label: t('model'),
+      component: FormItemComponent.SingleSelect,
+      props: {
+        defaultValue: 'nano-banana2-1K',
+        placeholder: '选择模型',
+        options: [
+          { key: 'nano-banana2-1K',title: 'nano-banana2-1K'},
+          { key: 'nano-banana2-2K',title: 'nano-banana2-2K'},
+          { key: 'nano-banana2-4K',title: 'nano-banana2-4K'},
+        ]
+      },
+      validator: {
+        required: true,
+      }
+    },
+    {
       key: 'prompt',
       label: t('prompt'),
       component: FormItemComponent.Textarea,
       props: {
-        placeholder: '请输入生图描述',
+        placeholder: '输入生图描述',
         enableFieldReference: true,
       },
       validator: {
@@ -76,7 +93,7 @@ fieldDecoratorKit.setDecorator({
       component: FormItemComponent.SingleSelect,
       props: {
         defaultValue: 'auto',
-        placeholder: '请选择图像比例',
+        placeholder: '选择图像比例',
         options: [
           { key: 'auto', title: 'auto' },
           { key: '1:1', title: '1:1' },
@@ -101,7 +118,7 @@ fieldDecoratorKit.setDecorator({
       component: FormItemComponent.SingleSelect,
       props: {
         defaultValue: 'png',
-        placeholder: '请选择输出格式',
+        placeholder: '选择输出格式',
         options: [
           { key: 'jpg', title: 'jpg' },
           { key: 'png', title: 'png' },
@@ -119,16 +136,14 @@ fieldDecoratorKit.setDecorator({
   },
   // formItemParams 为运行时传入的字段参数，对应字段配置里的 formItems （如引用的依赖字段）
 execute: async (context: any, formItemParams: any) => {
-  const { prompt, image, aspect_ratio, picType } = formItemParams;
+  const { model, prompt, image, aspect_ratio, picType } = formItemParams;
 
   const CONFIG = {
     baseUrl: 'https://ai.ysapi.cloud/v1/images/generations',
-    model: 'gpt-image-2',
-    maxRetries: 1,
+    model,
+    maxRetries: 2,
     maxTotalTime: 900000,
   };
-  
-  console.log(image);
   
 
   const tmpUrls = image ? image.filter(Boolean).flatMap(group => group.map(item => item.tmp_url)) : [];
