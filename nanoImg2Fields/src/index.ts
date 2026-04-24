@@ -128,7 +128,7 @@ execute: async (context: any, formItemParams: any) => {
     maxTotalTime: 900000,
   };
 
-  const tmpUrls = image.flatMap(group => group.map(item => item.tmp_url));
+  const tmpUrls = image ? image.flatMap(group => group.map(item => item.tmp_url)) : [];
 
   const buildRequestBody = () => {
     const body = {
