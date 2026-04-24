@@ -75,11 +75,20 @@ fieldDecoratorKit.setDecorator({
         defaultValue: '960x960',
         placeholder: '选择图像比例',
         options: [
-          { key: '960x960', title: '960x960' },
-          { key: '720x1280', title: '720x1280' },
-          { key: '1280x720', title: '1280x720' },
-          { key: '1168x784', title: '1168x784', },
-          { key: '784x1168', title: '784x1168' },
+          { key: 'auto', title: 'auto' },
+          { key: '1:1', title: '1:1' },
+          { key: '3:4', title: '3:4' },
+          { key: '4:3', title: '4:3' },
+          { key: '9:16', title: '9:16' },
+          { key: '16:9', title: '16:9' },
+          { key: '2:3', title: '2:3' },
+          { key: '3:2', title: '3:2' },
+          { key: '9:19.5', title: '9:19.5' },
+          { key: '19.5:9', title: '19.5:9' },
+          { key: '9:20', title: '9:20' },
+          { key: '20:9', title: '20:9' },
+          { key: '1:2', title: '1:2' },
+          { key: '2:1', title: '2:1' }
         ],
       },
       validator: {
@@ -160,6 +169,8 @@ execute: async (context: any, formItemParams: any) => {
         if (retry < CONFIG.maxRetries) continue;
         throw lastError;
       }
+
+      console.log(resJson);
 
       return {
         code: FieldExecuteCode.Success,
