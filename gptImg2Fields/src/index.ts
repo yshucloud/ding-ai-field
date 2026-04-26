@@ -12,18 +12,21 @@ fieldDecoratorKit.setDecorator({
       'prompt': '生图描述',
       'image': '参考图片',
       'aspect_ratio': '输出尺寸',
+      'resolution': '分辨率',
       'picType': '输出格式',
     },
     'en-US': {
       'prompt': 'Prompt',
       'image': 'Image',
       'aspect_ratio': 'Aspect Ratio',
+      'resolution': 'Resolution',
       'picType': 'Picture Type',
     },
     'ja-JP': {
       'prompt': 'プロプト',
       'image': '参考画像',
       'aspect_ratio': 'アスペクト比',
+      'resolution': '解像度',
       'picType': '画像形式',
     },
   },
@@ -65,6 +68,24 @@ fieldDecoratorKit.setDecorator({
       },
       validator: {
         required: false,
+      }
+    },
+     {
+      key: 'resolution',
+      label: t('resolution'),
+      component: FormItemComponent.SingleSelect,
+      props: {
+        defaultValue: '1K',
+        placeholder: '选择图像比例',
+        options: [
+          { key: '1K', title: '1K' },
+          { key: '2K', title: '2K' },
+          { key: '4K', title: '4K' },
+         
+        ]
+      },
+      validator: {
+        required: true,
       }
     },
     {
@@ -119,15 +140,16 @@ fieldDecoratorKit.setDecorator({
   },
   // formItemParams 为运行时传入的字段参数，对应字段配置里的 formItems （如引用的依赖字段）
 execute: async (context: any, formItemParams: any) => {
-  const { prompt, image, aspect_ratio, picType } = formItemParams;
+  const { prompt, image, aspect_ratio, resolution, picType } = formItemParams;
 
   const CONFIG = {
     baseUrl: 'https://ai.ysapi.cloud/v1/images/generations',
-    model: 'gpt-image-2',
+    model: resolution === '1K' ? 'gpt-image-2' : 'gpt-image-2-'+resolution,
     maxRetries:2,
     maxTotalTime: 900000,
   };  
 
+  
   const tmpUrls = image ? image.filter(Boolean).flatMap(group => group.map(item => item.tmp_url)) : [];
 
   const buildRequestBody = () => {
