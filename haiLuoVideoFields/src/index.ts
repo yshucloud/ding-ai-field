@@ -141,11 +141,12 @@ execute: async (context: any, formItemParams: any) => {
       duration: Number(duration),
       mark: 1,
     };
-    if (first_frame_image?.tmp_url) {
-      body.first_frame_image = first_frame_image.tmp_url;
+
+    if (first_frame_image) {
+      body.first_frame_image = first_frame_image[0].tmp_url;
     }
-    if (last_frame_image?.tmp_url) {
-      body.last_frame_image = last_frame_image.tmp_url;
+    if (last_frame_image) {
+      body.last_frame_image = last_frame_image[0].tmp_url;
     }
     return body;
   };
