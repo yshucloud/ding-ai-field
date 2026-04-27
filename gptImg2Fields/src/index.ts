@@ -5,7 +5,7 @@ const { t } = fieldDecoratorKit;
 fieldDecoratorKit.setDomainList(['ai.ysapi.cloud']);
 
 fieldDecoratorKit.setDecorator({
-  name: 'AI 生图(Image 2)',
+  name: 'AI 图片生成(Image 2)',
   // 定义捷径的i18n语言资源
   i18nMap: {
     'zh-CN': {
@@ -14,6 +14,7 @@ fieldDecoratorKit.setDecorator({
       'aspect_ratio': '输出尺寸',
       'resolution': '分辨率',
       'picType': '输出格式',
+      'promptPrompt': '输入生图描述',
     },
     'en-US': {
       'prompt': 'Prompt',
@@ -21,6 +22,7 @@ fieldDecoratorKit.setDecorator({
       'aspect_ratio': 'Aspect Ratio',
       'resolution': 'Resolution',
       'picType': 'Picture Type',
+      'promptPrompt': 'Input the image description',
     },
     'ja-JP': {
       'prompt': 'プロプト',
@@ -28,6 +30,7 @@ fieldDecoratorKit.setDecorator({
       'aspect_ratio': 'アスペクト比',
       'resolution': '解像度',
       'picType': '画像形式',
+      'promptPrompt': '画像の説明を入力してください',
     },
   },
   errorMessages: {},
@@ -51,7 +54,7 @@ fieldDecoratorKit.setDecorator({
       label: t('prompt'),
       component: FormItemComponent.Textarea,
       props: {
-        placeholder: '输入生图描述',
+        placeholder: t('promptPrompt'),
         enableFieldReference: true,
       },
       validator: {
@@ -76,12 +79,10 @@ fieldDecoratorKit.setDecorator({
       component: FormItemComponent.SingleSelect,
       props: {
         defaultValue: '1K',
-        placeholder: '选择图像比例',
         options: [
           { key: '1K', title: '1K' },
           { key: '2K', title: '2K' },
           { key: '4K', title: '4K' },
-         
         ]
       },
       validator: {
@@ -94,7 +95,6 @@ fieldDecoratorKit.setDecorator({
       component: FormItemComponent.SingleSelect,
       props: {
         defaultValue: 'auto',
-        placeholder: '选择图像比例',
         options: [
           { key: 'auto', title: 'auto' },
           { key: '1:1', title: '1:1' },
@@ -122,7 +122,6 @@ fieldDecoratorKit.setDecorator({
       component: FormItemComponent.SingleSelect,
       props: {
         defaultValue: 'png',
-        placeholder: '选择输出格式',
         options: [
           { key: 'jpg', title: 'jpg' },
           { key: 'png', title: 'png' },

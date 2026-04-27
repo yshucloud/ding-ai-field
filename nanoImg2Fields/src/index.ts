@@ -14,6 +14,7 @@ fieldDecoratorKit.setDecorator({
       'image': '参考图片',
       'aspect_ratio': '输出尺寸',
       'picType': '输出格式',
+      'promptPrompt': '输入生图描述',
     },
     'en-US': {
       'model': 'Model',
@@ -21,6 +22,7 @@ fieldDecoratorKit.setDecorator({
       'image': 'Image',
       'aspect_ratio': 'Aspect Ratio',
       'picType': 'Picture Type',
+      'promptPrompt': 'Input the image description',
     },
     'ja-JP': {
       'model': 'モデル',
@@ -28,6 +30,7 @@ fieldDecoratorKit.setDecorator({
       'image': '参考画像',
       'aspect_ratio': 'アスペクト比',
       'picType': '画像形式',
+      'promptPrompt': '画像の説明を入力してください',
     },
   },
   errorMessages: {},
@@ -68,7 +71,7 @@ fieldDecoratorKit.setDecorator({
       label: t('prompt'),
       component: FormItemComponent.Textarea,
       props: {
-        placeholder: '输入生图描述',
+        placeholder: t('promptPrompt'),
         enableFieldReference: true,
       },
       validator: {
@@ -93,7 +96,6 @@ fieldDecoratorKit.setDecorator({
       component: FormItemComponent.SingleSelect,
       props: {
         defaultValue: 'auto',
-        placeholder: '选择图像比例',
         options: [
           { key: 'auto', title: 'auto' },
           { key: '1:1', title: '1:1' },
@@ -118,7 +120,6 @@ fieldDecoratorKit.setDecorator({
       component: FormItemComponent.SingleSelect,
       props: {
         defaultValue: 'png',
-        placeholder: '选择输出格式',
         options: [
           { key: 'jpg', title: 'jpg' },
           { key: 'png', title: 'png' },
