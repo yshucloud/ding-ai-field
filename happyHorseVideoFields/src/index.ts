@@ -140,7 +140,7 @@ fieldDecoratorKit.setDecorator({
   },
   // formItemParams 为运行时传入的字段参数，对应字段配置里的 formItems （如引用的依赖字段）
 execute: async (context: any, formItemParams: any) => {
-  const { model, prompt, image, aspect_ratio, second } = formItemParams;
+  const { model, prompt, image_urls, size, duration } = formItemParams;
 
   const CONFIG = {
     baseUrl: 'https://ai.ysapi.cloud/v1/videos',
@@ -149,19 +149,19 @@ execute: async (context: any, formItemParams: any) => {
     pollInterval: 5000, // 5秒间隔
   };
 
-  const tmpUrls = image ? image.filter(Boolean).flatMap(group => group.map(item => item.tmp_url)) : [];
+  const tmpUrls = image_urls ? image_urls.filter(Boolean).flatMap(group => group.map(item => item.tmp_url)) : [];
 
   const buildRequestBody = () => {
-    const resolution = model.includes('720P') ? '720P' : model;
     const body = {
       model: CONFIG.model,
       prompt,
-      aspect_ratio,
-      resolution,
+      size,
+      resolution: model.split('-')[2],
+      duration: Number(duration),
       mark: 1,
     };
     if (tmpUrls.length > 0) {
-      (body as any).image = tmpUrls;
+      (body as any).image_urls = tmpUrls;
     }
     return body;
   };
@@ -172,6 +172,8 @@ execute: async (context: any, formItemParams: any) => {
     body: JSON.stringify(buildRequestBody()),
   };
 
+
+  
   console.log(buildRequestBody());
   
   const startTime = Date.now();
@@ -181,6 +183,7 @@ execute: async (context: any, formItemParams: any) => {
     // 1. 先POST获取task_id
     const res = await context.fetch(CONFIG.baseUrl, requestBody, 'auth_id');
     const resJson = await res.json();    
+    console.log(resJson);
 
     if (resJson.error) {
       throw new Error(resJson.error.message);
