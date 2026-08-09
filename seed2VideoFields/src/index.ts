@@ -259,7 +259,6 @@ execute: async (context: any, formItemParams: any) => {
       const pollRes = await context.fetch(pollUrl, pollRequest, 'auth_id');
       const pollResJson = await pollRes.json();
 
-      console.log(pollResJson)
 
       if (pollResJson.status === 'failed') {
         throw new Error(pollResJson.error.message);
