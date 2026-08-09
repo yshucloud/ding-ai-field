@@ -5,7 +5,7 @@ const { t } = fieldDecoratorKit;
 fieldDecoratorKit.setDomainList(['ai.ysapi.cloud']);
 
 fieldDecoratorKit.setDecorator({
-  name: 'AI 视频创作(seedance 2.0)',
+  name: 'AI 视频创作(seedance 2.5)',
   // 定义捷径的i18n语言资源
   i18nMap: {
     'zh-CN': {
@@ -63,12 +63,10 @@ fieldDecoratorKit.setDecorator({
       label: t('model'),
       component: FormItemComponent.SingleSelect,
       props: {
-        defaultValue: 'seedance-2-0',
+        defaultValue: 'seedance-2-5',
         placeholder: '选择模型',
         options: [
-          { key: 'seedance-2-0',title: 'seedance-2-0'},
-          { key: 'seedance-2-0-fast',title: 'seedance-2-0-fast'},
-          { key: 'seedance-2-0-mini',title: 'seedance-2-0-mini'},
+          { key: 'seedance-2-5',title: 'seedance-2-5'},
         ]
       },
       validator: {
@@ -130,8 +128,6 @@ fieldDecoratorKit.setDecorator({
       props: {
         defaultValue: '720p',
         options: [
-          { key: '4k', title: '4k' },
-          { key: '1080p', title: '1080p' },
           { key: '720p', title: '720p' },
           { key: '480p', title: '480p' },
         ],
@@ -178,7 +174,22 @@ fieldDecoratorKit.setDecorator({
           { key: '12', title: '12' },
           { key: '13', title: '13' },
           { key: '14', title: '14' },
-          { key: '15', title: '15' }
+          { key: '15', title: '15' },
+          { key: '16', title: '16' },
+          { key: '17', title: '17' },
+          { key: '18', title: '18' },
+          { key: '19', title: '19' },
+          { key: '20', title: '20' },
+          { key: '21', title: '21' },
+          { key: '22', title: '22' },
+          { key: '23', title: '23' },
+          { key: '24', title: '24' },
+          { key: '25', title: '25' },
+          { key: '26', title: '26' },
+          { key: '27', title: '27' },
+          { key: '28', title: '28' },
+          { key: '29', title: '29' },
+          { key: '30', title: '30' }
         ],
       },
       validator: {
@@ -231,8 +242,6 @@ execute: async (context: any, formItemParams: any) => {
     body: JSON.stringify(requestBody),
   };
 
-
-  console.log(requestBody)
   const startTime = Date.now();
   let lastError = null;
 
@@ -258,8 +267,6 @@ execute: async (context: any, formItemParams: any) => {
     while (Date.now() - startTime < CONFIG.maxTotalTime) {
       const pollRes = await context.fetch(pollUrl, pollRequest, 'auth_id');
       const pollResJson = await pollRes.json();
-
-      console.log(pollResJson)
 
       if (pollResJson.status === 'failed') {
         throw new Error(pollResJson.error.message);
