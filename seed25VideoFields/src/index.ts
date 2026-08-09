@@ -224,9 +224,9 @@ execute: async (context: any, formItemParams: any) => {
       .slice(0, maxCount);
 
   // 收集各种附件URL
-  const imageUrls = collectAttachmentUrls(images, 9);
-  const videoUrls = collectAttachmentUrls(videos, 3);
-  const audioUrls = collectAttachmentUrls(audios, 3);
+  const imageUrls = collectAttachmentUrls(images, 30);
+  const videoUrls = collectAttachmentUrls(videos, 10);
+  const audioUrls = collectAttachmentUrls(audios, 10);
 
   ([
     ['images', imageUrls],
