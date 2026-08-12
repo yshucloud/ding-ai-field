@@ -10,14 +10,14 @@ fieldDecoratorKit.setDecorator({
   i18nMap: {
     'zh-CN': {
       'model': '模型选择',
-      'resolution': '输出分辨率',
       'prompt': '视频生成描述',
       'images': '参考图片',
       'videos': '参考视频',
-      'audios': '参考音频',
-      'ratio': '输出尺寸',
+      'resolution': '输出分辨率',
+      'aspect_ratio': '输出尺寸',
       'duration': '视频时长',
-      'promptPrompt': '输入视频生成描述',
+      'sound':"是否有声",
+      'referenceType':"素材类型"
     },
     'en-US': {
       'model': 'Model',
@@ -25,10 +25,10 @@ fieldDecoratorKit.setDecorator({
       'prompt': 'Prompt',
       'images': 'Image',
       'videos': 'Videos',
-      'audios': 'Audios',
-      'ratio': 'Ratio',
-      'duration': 'Video Duration',
-      'promptPrompt': 'Input the video description',
+      'aspect_ratio': 'Aspect Ratio',
+      'duration': ' Duration',
+      'sound':"Sound",
+      'referenceType':"Reference Type",
     },
     'ja-JP': {
       'model': 'モデル',
@@ -36,10 +36,10 @@ fieldDecoratorKit.setDecorator({
       'images': 'プロプト',
       'image': '参考画像',
       'videos': '参考動画',
-      'audios': '参考音声',
-      'ratio': 'アスペクト比',
+      'aspect_ratio': 'アスペクト比',
       'duration': '動画の時長',
-      'promptPrompt': '動画の説明を入力してください',
+      'sound':"音声",
+      'referenceType':"素材タイプ",
     },
   },
   errorMessages: {},
@@ -58,7 +58,7 @@ fieldDecoratorKit.setDecorator({
   },
   // 定义捷径的入参
   formItems: [
-     {
+    {
       key: 'model',
       label: t('model'),
       component: FormItemComponent.SingleSelect,
@@ -143,13 +143,13 @@ fieldDecoratorKit.setDecorator({
       props: {
         defaultValue: 'adaptive',
         options: [
-        { key: 'adaptive', title: 'adaptive' },
-        { key: '9:16', title: '9:16' },
-        { key: '16:9', title: '16:9' },
-        { key: '1:1', title: '1:1' },
-        { key: '4:3', title: '4:3' },
-        { key: '3:4', title: '3:4' },
-        { key: '21:9', title: '21:9' }
+          { key: 'adaptive', title: 'adaptive' },
+          { key: '9:16', title: '9:16' },
+          { key: '16:9', title: '16:9' },
+          { key: '1:1', title: '1:1' },
+          { key: '4:3', title: '4:3' },
+          { key: '3:4', title: '3:4' },
+          { key: '21:9', title: '21:9' }
         ],
       },
       validator: {
@@ -161,7 +161,7 @@ fieldDecoratorKit.setDecorator({
       label: t('duration'),
       component: FormItemComponent.SingleSelect,
       props: {
-       defaultValue: '4',
+        defaultValue: '4',
         options: [
           { key: '4', title: '4' },
           { key: '5', title: '5' },
@@ -202,121 +202,111 @@ fieldDecoratorKit.setDecorator({
     type: FieldType.Attachment,
   },
   // formItemParams 为运行时传入的字段参数，对应字段配置里的 formItems （如引用的依赖字段）
-execute: async (context: any, formItemParams: any) => {
-  const { model, prompt,duration, resolution, images, videos, audios, ratio } = formItemParams;
+  execute: async (context: any, formItemParams: any) => {
+    const { model, prompt,duration, resolution, images, videos, audios, ratio } = formItemParams;
 
-  const CONFIG = { baseUrl: 'https://ai.ysapi.cloud/v1/videos', maxTotalTime: 900000, pollInterval: 5000 };
+    const CONFIG = { baseUrl: 'https://ai.ysapi.cloud/v1/videos', maxTotalTime: 900000, pollInterval: 5000 };
 
-  const requestBody: any = {
-    model,
-    prompt,
-    metadata: {
-      ratio,
-      duration: Number(duration),
-      resolution,
-    },
-  };
-
-  const collectAttachmentUrls = (attachments: any, maxCount: number): string[] =>
-    (Array.isArray(attachments) ? attachments.flat() : [])
-      .map(item => item?.tmp_url?.trim().replace(/^`|`$/g, ''))
-      .filter(Boolean)
-      .slice(0, maxCount);
-
-  // 收集各种附件URL
-  const imageUrls = collectAttachmentUrls(images, 30);
-  const videoUrls = collectAttachmentUrls(videos, 10);
-  const audioUrls = collectAttachmentUrls(audios, 10);
-
-  ([
-    ['images', imageUrls],
-    ['videos', videoUrls],
-    ['audios', audioUrls],
-  ] as const).forEach(([key, urls]) => {
-    if (urls.length) requestBody[key] = urls;
-  });
-
-  const questBody = {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(requestBody),
-  };
-
-  const startTime = Date.now();
-  let lastError = null;
-
-  try {
-    // 1. 先POST获取task_id
-    const res = await context.fetch(CONFIG.baseUrl, questBody, 'auth_id');
-    const resJson = await res.json();
-    console.log(resJson);
-    
-
-     if (!resJson?.id) {
-        console.log(resJson);
-        if (resJson?.error) {
-          throw new Error(resJson.error.message || '创建视频任务失败');
-        }else{
-          let msg = resJson.message;
-          try { msg = JSON.parse(msg).message; } catch {}
-          msg = msg.replace(/\s*Request id:.*/i, '').trim();
-          throw new Error(msg || '创建视频任务失败');
-        }
-      }
-
-    const taskId = resJson.id;
-    console.log('获取到task_id:', taskId);
-
-    // 2. GET轮询结果
-    const pollUrl = `${CONFIG.baseUrl}/${taskId}`;
-    const pollRequest = {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
+    const requestBody: any = {
+      model,
+      prompt,
+      metadata: {
+        ratio,
+        duration: Number(duration),
+        resolution,
+      },
     };
 
-    while (Date.now() - startTime < CONFIG.maxTotalTime) {
-      const pollRes = await context.fetch(pollUrl, pollRequest, 'auth_id');
-      const pollResJson = await pollRes.json();
+    const collectAttachmentUrls = (attachments: any, maxCount: number): string[] =>
+        (Array.isArray(attachments) ? attachments.flat() : [])
+            .map(item => item?.tmp_url?.trim().replace(/^`|`$/g, ''))
+            .filter(Boolean)
+            .slice(0, maxCount);
 
-      if (pollResJson.status === 'failed') {
-        throw new Error(pollResJson.error.message);
+    // 收集各种附件URL
+    const imageUrls = collectAttachmentUrls(images, 30);
+    const videoUrls = collectAttachmentUrls(videos, 10);
+    const audioUrls = collectAttachmentUrls(audios, 10);
+
+    ([
+      ['images', imageUrls],
+      ['videos', videoUrls],
+      ['audios', audioUrls],
+    ] as const).forEach(([key, urls]) => {
+      if (urls.length) requestBody[key] = urls;
+    });
+
+    const questBody = {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(requestBody),
+    };
+
+    const startTime = Date.now();
+    let lastError = null;
+
+    try {
+      // 1. 先POST获取task_id
+      const res = await context.fetch(CONFIG.baseUrl, questBody, 'auth_id');
+      const resJson = await res.json();
+
+      if (resJson.error) {
+        throw new Error(resJson.error.message);
       }
 
-      // 检查是否完成
-      if (pollResJson.status === 'completed') {
-        return {
-          code: FieldExecuteCode.Success, // 0 表示请求成功
-          // data 类型需与下方 resultType 定义一致
-          data: [{
-            fileName: `${taskId}.mp4`,
-            type: 'video',
-            url: pollResJson.video_url,
-          }],
-        };
+      const taskId = resJson.id;
+      console.log('获取到task_id:', taskId);
+
+      // 2. GET轮询结果
+      const pollUrl = `${CONFIG.baseUrl}/${taskId}`;
+      const pollRequest = {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      };
+
+      while (Date.now() - startTime < CONFIG.maxTotalTime) {
+        const pollRes = await context.fetch(pollUrl, pollRequest, 'auth_id');
+        const pollResJson = await pollRes.json();
+
+        if (pollResJson.status === 'failed') {
+          throw new Error(pollResJson.error.message);
+        }
+
+        // 检查是否完成
+        if (pollResJson.status === 'completed') {
+          return {
+            code: FieldExecuteCode.Success, // 0 表示请求成功
+            // data 类型需与下方 resultType 定义一致
+            data: [{
+              fileName: `${taskId}.mp4`,
+              type: 'video',
+              url: pollResJson.video_url,
+            }],
+          };
+        }
+
+        // 间隔5秒
+        await new Promise(resolve => setTimeout(resolve, CONFIG.pollInterval));
       }
 
-      // 间隔5秒
-      await new Promise(resolve => setTimeout(resolve, CONFIG.pollInterval));
+      // 超时
+      throw new Error('请求超时');
+    } catch (error) {
+      lastError = error;
+    }
+    const errmsg = String(lastError);
+    console.log(errmsg);
+
+    if (errmsg.includes('额度')) {
+      return { code: FieldExecuteCode.QuotaExhausted };
+    }
+    if (errmsg.includes('令牌')) {
+      return { code: FieldExecuteCode.AuthorizationError };
     }
 
-    // 超时
-    throw new Error('请求超时');
-  } catch (error) {
-    lastError = error;
-  }
-  const errmsg = String(lastError);
-  console.log(errmsg);
 
-  if (errmsg.includes('额度')) {
-    return { code: FieldExecuteCode.QuotaExhausted };
-  }
-  if (errmsg.includes('令牌')) {
-    return { code: FieldExecuteCode.AuthorizationError };
-  }
-  
-
-  return { code: FieldExecuteCode.Error, extra: { errmsg } };
-},
+    return { code: FieldExecuteCode.Error, extra: { errmsg } };
+  },
 });
 
 export default fieldDecoratorKit;

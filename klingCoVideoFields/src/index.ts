@@ -5,7 +5,7 @@ const { t } = fieldDecoratorKit;
 fieldDecoratorKit.setDomainList(['ai.ysapi.cloud']);
 
 fieldDecoratorKit.setDecorator({
-  name: 'AI 视频创作(seedance 2.0)',
+  name: 'AI 视频创作(seedance 2.5)',
   // 定义捷径的i18n语言资源
   i18nMap: {
     'zh-CN': {
@@ -15,7 +15,7 @@ fieldDecoratorKit.setDecorator({
       'images': '参考图片',
       'videos': '参考视频',
       'audios': '参考音频',
-      'ratio': '输出尺寸',
+      'aspect_ratio': '输出尺寸',
       'duration': '视频时长',
       'promptPrompt': '输入视频生成描述',
     },
@@ -26,7 +26,7 @@ fieldDecoratorKit.setDecorator({
       'images': 'Image',
       'videos': 'Videos',
       'audios': 'Audios',
-      'ratio': 'Ratio',
+      'aspect_ratio': 'Ratio',
       'duration': 'Video Duration',
       'promptPrompt': 'Input the video description',
     },
@@ -37,7 +37,7 @@ fieldDecoratorKit.setDecorator({
       'image': '参考画像',
       'videos': '参考動画',
       'audios': '参考音声',
-      'ratio': 'アスペクト比',
+      'aspect_ratio': 'アスペクト比',
       'duration': '動画の時長',
       'promptPrompt': '動画の説明を入力してください',
     },
@@ -63,12 +63,10 @@ fieldDecoratorKit.setDecorator({
       label: t('model'),
       component: FormItemComponent.SingleSelect,
       props: {
-        defaultValue: 'seedance-2-0',
+        defaultValue: 'kling-v3',
         placeholder: '选择模型',
         options: [
-          { key: 'seedance-2-0',title: 'seedance-2-0'},
-          { key: 'seedance-2-0-fast',title: 'seedance-2-0-fast'},
-          { key: 'seedance-2-0-mini',title: 'seedance-2-0-mini'},
+          { key: 'kling-v3',title: 'kling-v3'},
         ]
       },
       validator: {
@@ -92,7 +90,7 @@ fieldDecoratorKit.setDecorator({
       label: t('images'),
       component: FormItemComponent.FieldSelect,
       props: {
-        mode: 'multiple',
+        mode: 'single',
         supportTypes: [FieldType.Attachment],
       },
       validator: {
@@ -100,23 +98,11 @@ fieldDecoratorKit.setDecorator({
       }
     },
     {
-      key: 'videos',
-      label: t('videos'),
+      key: 'video',
+      label: t('video'),
       component: FormItemComponent.FieldSelect,
       props: {
-        mode: 'multiple',
-        supportTypes: [FieldType.Attachment],
-      },
-      validator: {
-        required: false,
-      }
-    },
-    {
-      key: 'audios',
-      label: t('audios'),
-      component: FormItemComponent.FieldSelect,
-      props: {
-        mode: 'multiple',
+        mode: 'single',
         supportTypes: [FieldType.Attachment],
       },
       validator: {
@@ -130,10 +116,8 @@ fieldDecoratorKit.setDecorator({
       props: {
         defaultValue: '720p',
         options: [
-          { key: '4k', title: '4k' },
-          { key: '1080p', title: '1080p' },
           { key: '720p', title: '720p' },
-          { key: '480p', title: '480p' },
+          { key: '1080p', title: '1080p' },
         ],
       },
       validator: {
@@ -141,8 +125,8 @@ fieldDecoratorKit.setDecorator({
       }
     },
     {
-      key: 'ratio',
-      label: t('ratio'),
+      key: 'aspect_ratio',
+      label: t('aspect_ratio'),
       component: FormItemComponent.SingleSelect,
       props: {
         defaultValue: 'adaptive',
@@ -192,38 +176,23 @@ fieldDecoratorKit.setDecorator({
   },
   // formItemParams 为运行时传入的字段参数，对应字段配置里的 formItems （如引用的依赖字段）
 execute: async (context: any, formItemParams: any) => {
-  const { model, prompt,duration, resolution, images, videos, audios, ratio } = formItemParams;
+  const { model, prompt,duration, resolution, images, video, aspect_ratio,keep_original_sound,character_orientation,sound } = formItemParams;
 
-  const CONFIG = { baseUrl: 'https://ai.ysapi.cloud/v1/videos', maxTotalTime: 900000, pollInterval: 5000 };
+  const CONFIG = { baseUrl: 'https://ai.ysapi.cloud/v1/videos1', maxTotalTime: 900000, pollInterval: 5000 };
 
   const requestBody: any = {
     model,
     prompt,
-    metadata: {
-      ratio,
-      duration: Number(duration),
-      resolution,
-    },
+    aspect_ratio,
+    duration: Number(duration),
+    resolution,
+    keep_original_sound,
+    character_orientation,
+    sound
   };
 
-  const collectAttachmentUrls = (attachments: any, maxCount: number): string[] =>
-    (Array.isArray(attachments) ? attachments.flat() : [])
-      .map(item => item?.tmp_url?.trim().replace(/^`|`$/g, ''))
-      .filter(Boolean)
-      .slice(0, maxCount);
+  console.log(images)
 
-  // 收集各种附件URL
-  const imageUrls = collectAttachmentUrls(images, 9);
-  const videoUrls = collectAttachmentUrls(videos, 3);
-  const audioUrls = collectAttachmentUrls(audios, 3);
-
-  ([
-    ['images', imageUrls],
-    ['videos', videoUrls],
-    ['audios', audioUrls],
-  ] as const).forEach(([key, urls]) => {
-    if (urls.length) requestBody[key] = urls;
-  });
 
   const questBody = {
     method: 'POST',
@@ -231,8 +200,6 @@ execute: async (context: any, formItemParams: any) => {
     body: JSON.stringify(requestBody),
   };
 
-
-  console.log(requestBody)
   const startTime = Date.now();
   let lastError = null;
 
@@ -241,17 +208,9 @@ execute: async (context: any, formItemParams: any) => {
     const res = await context.fetch(CONFIG.baseUrl, questBody, 'auth_id');
     const resJson = await res.json();
 
-   if (!resJson?.id) {
-        console.log(resJson);
-        if (resJson?.error) {
-          throw new Error(resJson.error.message || '创建视频任务失败');
-        }else{
-          let msg = resJson.message;
-          try { msg = JSON.parse(msg).message; } catch {}
-          msg = msg.replace(/\s*Request id:.*/i, '').trim();
-          throw new Error(msg || '创建视频任务失败');
-        }
-      }
+    if (resJson.error) {
+      throw new Error(resJson.error.message);
+    }
 
     const taskId = resJson.id;
     console.log('获取到task_id:', taskId);
@@ -266,7 +225,6 @@ execute: async (context: any, formItemParams: any) => {
     while (Date.now() - startTime < CONFIG.maxTotalTime) {
       const pollRes = await context.fetch(pollUrl, pollRequest, 'auth_id');
       const pollResJson = await pollRes.json();
-
 
       if (pollResJson.status === 'failed') {
         throw new Error(pollResJson.error.message);
@@ -303,7 +261,7 @@ execute: async (context: any, formItemParams: any) => {
   if (errmsg.includes('令牌')) {
     return { code: FieldExecuteCode.AuthorizationError };
   }
-  
+
 
   return { code: FieldExecuteCode.Error, extra: { errmsg } };
 },
